@@ -1,0 +1,260 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>AI Resume Analyzer - Smart Resume Analysis Tool</title>
+    <link rel="stylesheet" href="css/style.css">
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
+</head>
+<body>
+    <!-- Navbar -->
+    <nav class="navbar">
+        <div class="container">
+            <div class="nav-content">
+                <div class="logo">
+                    <i class="fas fa-file-alt"></i>
+                    <span>AI Resume Analyzer</span>
+                </div>
+                <div class="nav-actions">
+                    <button class="theme-toggle" id="themeToggle" aria-label="Toggle theme">
+                        <i class="fas fa-moon"></i>
+                    </button>
+                </div>
+            </div>
+        </div>
+    </nav>
+
+    <!-- Hero Section -->
+    <section class="hero">
+        <div class="container">
+            <div class="hero-content">
+                <h1 class="hero-title">Analyze Your Resume with AI</h1>
+                <p class="hero-subtitle">Get instant feedback, ATS compatibility scores, and personalized suggestions to improve your resume</p>
+            </div>
+        </div>
+    </section>
+
+    <!-- Main Content -->
+    <main class="main-content">
+        <div class="container">
+            <!-- Upload Section -->
+            <section class="upload-section glass-card">
+                <h2 class="section-title">
+                    <i class="fas fa-upload"></i>
+                    Upload Your Resume
+                </h2>
+                <div class="upload-area" id="uploadArea">
+                    <input type="file" id="resumeFile" accept=".pdf,.docx,.txt" hidden>
+                    <div class="upload-content">
+                        <i class="fas fa-cloud-upload-alt"></i>
+                        <p class="upload-text">Drag & drop your resume here or click to browse</p>
+                        <p class="upload-formats">Supported formats: PDF, DOCX, TXT</p>
+                        <button class="btn btn-primary" id="browseBtn">
+                            <i class="fas fa-folder-open"></i>
+                            Browse Files
+                        </button>
+                    </div>
+                    <div class="file-info" id="fileInfo" style="display: none;">
+                        <i class="fas fa-file-alt"></i>
+                        <span class="file-name" id="fileName"></span>
+                        <button class="btn-remove" id="removeFile">
+                            <i class="fas fa-times"></i>
+                        </button>
+                    </div>
+                </div>
+            </section>
+
+            <!-- Job Description Section -->
+            <section class="job-description-section glass-card">
+                <h2 class="section-title">
+                    <i class="fas fa-briefcase"></i>
+                    Job Description (Optional)
+                </h2>
+                <textarea 
+                    id="jobDescription" 
+                    class="job-description-input" 
+                    placeholder="Paste the job description here to get a better match analysis..."
+                    rows="8"
+                ></textarea>
+            </section>
+
+            <!-- API Key Section -->
+            <section class="api-key-section glass-card">
+                <h2 class="section-title">
+                    <i class="fas fa-key"></i>
+                    Gemini API Key
+                </h2>
+                <div class="api-key-input-group">
+                    <input 
+                        type="password" 
+                        id="apiKey" 
+                        class="api-key-input" 
+                        placeholder="Enter your Gemini API key..."
+                    >
+                    <button class="btn-toggle-key" id="toggleApiKey">
+                        <i class="fas fa-eye"></i>
+                    </button>
+                </div>
+                <p class="api-key-hint">
+                    <i class="fas fa-info-circle"></i>
+                    Get your free API key from <a href="https://makersuite.google.com/app/apikey" target="_blank">Google AI Studio</a>
+                </p>
+            </section>
+
+            <!-- Analyze Button -->
+            <div class="analyze-section">
+                <button class="btn btn-analyze" id="analyzeBtn">
+                    <i class="fas fa-brain"></i>
+                    Analyze Resume
+                </button>
+            </div>
+
+            <!-- Loading Animation -->
+            <div class="loading-container" id="loadingContainer" style="display: none;">
+                <div class="loading-spinner"></div>
+                <p class="loading-text">Analyzing your resume with AI...</p>
+            </div>
+
+            <!-- Error Message -->
+            <div class="error-message" id="errorMessage" style="display: none;">
+                <i class="fas fa-exclamation-circle"></i>
+                <span id="errorText"></span>
+            </div>
+
+            <!-- Results Section -->
+            <section class="results-section" id="resultsSection" style="display: none;">
+                <div class="results-header">
+                    <h2 class="section-title">
+                        <i class="fas fa-chart-line"></i>
+                        Analysis Results
+                    </h2>
+                    <div class="results-actions">
+                        <button class="btn btn-secondary" id="copyReportBtn">
+                            <i class="fas fa-copy"></i>
+                            Copy Report
+                        </button>
+                        <button class="btn btn-primary" id="downloadReportBtn">
+                            <i class="fas fa-download"></i>
+                            Download PDF
+                        </button>
+                    </div>
+                </div>
+
+                <!-- Score Cards -->
+                <div class="score-grid">
+                    <div class="score-card glass-card">
+                        <div class="score-icon resume-score">
+                            <i class="fas fa-star"></i>
+                        </div>
+                        <h3 class="score-label">Resume Score</h3>
+                        <div class="score-value" id="resumeScore">0</div>
+                        <div class="progress-bar">
+                            <div class="progress-fill" id="resumeScoreProgress"></div>
+                        </div>
+                    </div>
+
+                    <div class="score-card glass-card">
+                        <div class="score-icon ats-score">
+                            <i class="fas fa-robot"></i>
+                        </div>
+                        <h3 class="score-label">ATS Compatibility</h3>
+                        <div class="score-value" id="atsScore">0</div>
+                        <div class="progress-bar">
+                            <div class="progress-fill" id="atsScoreProgress"></div>
+                        </div>
+                    </div>
+
+                    <div class="score-card glass-card">
+                        <div class="score-icon match-score">
+                            <i class="fas fa-bullseye"></i>
+                        </div>
+                        <h3 class="score-label">Job Match</h3>
+                        <div class="score-value" id="jobMatchScore">0</div>
+                        <div class="progress-bar">
+                            <div class="progress-fill" id="jobMatchProgress"></div>
+                        </div>
+                    </div>
+                </div>
+
+                <!-- Skills Section -->
+                <div class="skills-grid">
+                    <div class="skills-card glass-card">
+                        <h3 class="card-title">
+                            <i class="fas fa-check-circle"></i>
+                            Skills Found
+                        </h3>
+                        <div class="skills-container" id="skillsFound"></div>
+                    </div>
+
+                    <div class="skills-card glass-card">
+                        <h3 class="card-title">
+                            <i class="fas fa-exclamation-circle"></i>
+                            Missing Skills
+                        </h3>
+                        <div class="skills-container" id="missingSkills"></div>
+                    </div>
+                </div>
+
+                <!-- Strengths & Weaknesses -->
+                <div class="analysis-grid">
+                    <div class="analysis-card glass-card">
+                        <h3 class="card-title">
+                            <i class="fas fa-thumbs-up"></i>
+                            Strengths
+                        </h3>
+                        <ul class="analysis-list" id="strengthsList"></ul>
+                    </div>
+
+                    <div class="analysis-card glass-card">
+                        <h3 class="card-title">
+                            <i class="fas fa-thumbs-down"></i>
+                            Weaknesses
+                        </h3>
+                        <ul class="analysis-list" id="weaknessesList"></ul>
+                    </div>
+                </div>
+
+                <!-- AI Suggestions -->
+                <div class="suggestions-card glass-card">
+                    <h3 class="card-title">
+                        <i class="fas fa-lightbulb"></i>
+                        AI Suggestions
+                    </h3>
+                    <ul class="suggestions-list" id="suggestionsList"></ul>
+                </div>
+            </section>
+
+            <!-- Previous Analyses -->
+            <section class="history-section glass-card" id="historySection" style="display: none;">
+                <h2 class="section-title">
+                    <i class="fas fa-history"></i>
+                    Previous Analyses
+                </h2>
+                <div class="history-list" id="historyList"></div>
+            </section>
+        </div>
+    </main>
+
+    <!-- Footer -->
+    <footer class="footer">
+        <div class="container">
+            <div class="footer-content">
+                <p>&copy; 2026 AI Resume Analyzer. Powered by Google Gemini AI.</p>
+                <div class="footer-links">
+                    <a href="#"><i class="fab fa-github"></i></a>
+                    <a href="#"><i class="fab fa-linkedin"></i></a>
+                    <a href="#"><i class="fab fa-twitter"></i></a>
+                </div>
+            </div>
+        </div>
+    </footer>
+
+    <!-- Scripts -->
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/jspdf/2.5.1/jspdf.umd.min.js"></script>
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/pdf.js/3.11.174/pdf.min.js"></script>
+    <script src="js/storage.js"></script>
+    <script src="js/api.js"></script>
+    <script src="js/app.js"></script>
+</body>
+</html>
